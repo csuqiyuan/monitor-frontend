@@ -26,7 +26,7 @@
                 <i class="el-icon-share"></i>
                 <span slot="title">Services</span>
             </el-menu-item>
-            <el-menu-item index="5">
+            <el-menu-item index="/pods">
                 <i class="el-icon-cpu"></i>
                 <span slot="title">Pods</span>
             </el-menu-item>
