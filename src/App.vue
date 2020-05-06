@@ -13,8 +13,8 @@
 
 <script>
 
-	import Aside from "@/common/Aside";
-	import MainPage from "@/common/MainPage";
+	import Aside from "./common/Aside";
+	import MainPage from "./common/MainPage";
 	import Header from "./common/Header";
 
 	export default {

@@ -3,130 +3,289 @@
         <span style="font-size: 22px;font-weight: bold;">{{this.$route.query.hostname}}</span>
         <div class="info">
             <p class="title">基本信息：</p>
-            <ul>
-                <li>
-                    ip: {{node.ip}}
-                </li>
-                <li>
-                    ip: {{node.name}}
-                </li>
-                <li>
-                    ip: {{node.test}}
-                </li>
-            </ul>
-        </div>
+            <div class="info-left">
+                <el-form label-width="130px" label-position="left">
+                    <el-form-item label="节点名称: ">
+                        {{nodeInfo.hostname}}
+                    </el-form-item>
+                    <el-form-item label="节点地址: ">
+                        {{nodeInfo.address}}
+                    </el-form-item>
+                    <el-form-item label="节点系统: ">
+                        {{nodeInfo.osImage}}
+                    </el-form-item>
+                    <el-form-item label="创建时间: ">
+                        {{nodeInfo.createTime}}
+                    </el-form-item>
+                    <el-form-item label="Cpu总量(c): ">
+                        {{nodeInfo.totalCpu}}
+                    </el-form-item>
+                    <el-form-item label="内存总量(M): ">
+                        {{nodeInfo.totalMemory}}
+                    </el-form-item>
+                    <el-form-item label="可用Cpu总量: ">
+                        {{nodeInfo.restCpu}}
+                    </el-form-item>
+                    <el-form-item label="可用内存总量: ">
+                        {{nodeInfo.restMemory}}
+                    </el-form-item>
+                    <el-form-item label="剩余可用Cpu总量: ">
+                        {{nodeInfo.usableCpu}}
+                    </el-form-item>
+                    <el-form-item label="剩余可用内存总量: ">
+                        {{nodeInfo.usableMemory}}
+                    </el-form-item>
+                </el-form>
 
+            </div>
+            <div class="info-box">
+                <div id="main" class="box"></div>
+            </div>
+        </div>
         <div class="info">
             <p class="title">节点上运行的 Pod：</p>
             <el-table
+                    max-height="500"
                     :data="tableData"
                     style="width: 100%">
                 <el-table-column
-                        prop="name"
+                        prop="metadata.name"
                         label="名称"
                         width="100"
                         fixed="left">
                 </el-table-column>
                 <el-table-column
-                        prop="name"
+                        prop="spec.containers[0].image"
                         label="镜像"
                         width="100">
                 </el-table-column>
                 <el-table-column
-                        prop="name"
+                        prop="status.phase"
                         label="状态"
                         width="100">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.status.phase==='Running'"
+                              style="color:#67C23A;font-weight: bold;">{{scope.row.status.phase}}</span>
+                        <span v-else style="color: #F56C6C;font-weight: bold;">{{scope.row.status.phase}}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column
-                        prop="name"
-                        label="申请CPU资源"
-                        width="120">
-                </el-table-column>
-                <el-table-column
-                        prop="address"
-                        label="申请Memory资源"
-                        width="140">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
-                        label="最大CPU资源"
-                        width="120">
-                </el-table-column>
-                <el-table-column
-                        prop="address"
-                        label="最大Memory资源"
-                        width="140">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
-                        label="创建时间"
+                        prop="metadata.namespace"
+                        label="命名空间"
                         width="100">
                 </el-table-column>
                 <el-table-column
-                        prop="address"
-                        label="存活时间"
+                        prop="requestCpu"
+                        label="申请CPU资源"
+                        width="120">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.requestCpu===0" style="color: #F56C6C">unknown</span>
+                        <span v-else>{{scope.row.requestCpu}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="requestMemory"
+                        label="申请Memory资源"
+                        width="140">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.requestMemory===0" style="color: #F56C6C">unknown</span>
+                        <span v-else>{{scope.row.requestMemory}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="limitCpu"
+                        label="最大CPU资源"
+                        width="120">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.limitCpu===0" style="color: #F56C6C">unknown</span>
+                        <span v-else>{{scope.row.limitCpu}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="limitMemory"
+                        label="最大Memory资源"
+                        width="140">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.limitMemory===0" style="color: #F56C6C">unknown</span>
+                        <span v-else>{{scope.row.limitMemory}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="createTime"
+                        label="创建时间"
                         width="100">
                 </el-table-column>
                 <el-table-column
                         fixed="right"
                         label="操作"
-                        width="150">
+                        width="100">
                     <template slot-scope="scope">
                         <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                        <el-button type="text" size="small">编辑</el-button>
                         <el-button type="text" size="small">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
-
     </div>
 </template>
 
 <script>
+	import {node, podsByNode} from "../router/apis";
+
 	export default {
 		name: "Node",
 		data() {
 			return {
-				node: {
-					"ip": "110.120.119.21",
-					"name": "node1",
-					"test": "11223"
-				},
-				tableData: [{
-					date: '2016-05-02',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1518 弄'
-				}, {
-					date: '2016-05-04',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1517 弄'
-				}, {
-					date: '2016-05-01',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1519 弄'
-				}, {
-					date: '2016-05-03',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1516 弄'
-				}]
+				nodeInfo: {},
+				tableData: [],
+				isActive: true
 			}
+		},
+		mounted() {
+			node(this.$route.query.hostname, null).then(res => {
+				res.totalMemory = Math.round(res.totalMemory / 1024 / 1024)
+				res.restMemory = Math.round(res.restMemory / 1024 / 1024)
+				res.usableMemory = Math.round(res.usableMemory / 1024 / 1024)
+				this.nodeInfo = res
+				this.drawChart()
+			});
+			podsByNode(this.$route.query.hostname, null).then(res => {
+				for (let i = 0; i < res.items.length; i++) {
+					res.items[i].requestCpu=0;
+					res.items[i].requestMemory=0;
+					res.items[i].limitCpu=0;
+					res.items[i].limitMemory=0;
+					let d = new Date(res.items[i].metadata.creationTimestamp)
+					res.items[i].createTime=d.getFullYear()+"-"+(d.getMonth()+1<10?"0"+(d.getMonth()+1):(d.getMonth()+1))
+                        +"-"+(d.getDay()<10?"0"+d.getDay():d.getDay())+" "+(d.getHours()<10?"0"+d.getHours():d.getHours())
+                        +":"+(d.getMinutes()<10?"0"+d.getMinutes():d.getMinutes());
+					for (let j=0;j<res.items[i].spec.containers.length;j++){
+						console.log(res.items[i].spec.containers[j])
+						try{
+							res.items[i].requestCpu += res.items[i].spec.containers[j].resources.requests.cpu.number
+						}catch (e) {
+							res.items[i].requestCpu += 0
+						}
+						try{
+							res.items[i].requestMemory += Math.round(res.items[i].spec.containers[j].resources.requests.memory.number / 1024 / 1024)
+						}catch (e) {
+							res.items[i].requestMemory += 0
+						}
+						try{
+							res.items[i].limitCpu += res.items[i].spec.containers[j].resources.limits.cpu.number
+						}catch (e) {
+							res.items[i].limitCpu += 0
+						}
+						try{
+							res.items[i].limitMemory += Math.round(res.items[i].spec.containers[j].resources.limits.memory.number / 1024 / 1024)
+						}catch (e) {
+							res.items[i].limitMemory += 0
+						}
+                    }
+				}
+				this.tableData = res.items
+			})
 		},
 		methods: {
 			handleClick(row) {
 				console.log(row);
+			},
+			drawChart() {
+				// 基于准备好的dom，初始化echarts实例
+				let myChart = this.$echarts.init(document.getElementById("main"));
+				// 指定图表的配置项和数据
+				let option = {
+					title: [
+						{
+							text: '节点资源总揽',
+							left: '50%',
+							top: 0,
+							textAlign: 'center'
+						},
+						{
+							subtext: 'CPU使用情况',
+							left: '32%',
+							top: '80%',
+							textAlign: 'center'
+						},
+						{
+							subtext: 'Memory使用情况',
+							right: '18%',
+							top: '80%',
+							textAlign: 'center'
+						}
+					],
+					tooltip: {
+						trigger: 'item',
+						formatter: '{a} <br/>{b} : {c} ({d}%)'
+					},
+					legend: {
+						orient: 'vertical',
+						left: '10%',
+						top: '10%',
+						data: ['剩余可用', '已经使用']
+					},
+					series: [
+						{
+							name: 'CPU(c)',
+							type: 'pie',
+							radius: '50%',
+							right: "35%",
+							center: ['50%', '50%'],
+							data: [
+								{value: this.nodeInfo.totalCpu - this.nodeInfo.usableCpu, name: '已经使用'},
+								{value: this.nodeInfo.usableCpu, name: '剩余可用'}
+							],
+							color: ['#909399', '#67C23A'],
+							emphasis: {
+								itemStyle: {
+									shadowBlur: 10,
+									shadowOffsetX: 0,
+									shadowColor: 'rgba(0, 0, 0, 0.5)'
+								}
+							},
+							label: {
+								show: false
+							},
+							labelLine: {
+								show: false
+							}
+						},
+						{
+							name: 'Memory(MB)',
+							type: 'pie',
+							radius: '50%',
+							left: '35%',
+							center: ['50%', '50%'],
+							data: [
+								{value: this.nodeInfo.totalMemory - this.nodeInfo.usableMemory, name: '已经使用'},
+								{value: this.nodeInfo.usableMemory, name: '剩余可用'}
+							],
+							color: ['#909399', '#67C23A'],
+							emphasis: {
+								itemStyle: {
+									shadowBlur: 10,
+									shadowOffsetX: 0,
+									shadowColor: 'rgba(0, 0, 0, 0.5)'
+								}
+							},
+							label: {
+								show: false
+							},
+							labelLine: {
+								show: false
+							}
+						}
+					]
+				};
+				// 使用刚指定的配置项和数据显示图表。
+				myChart.setOption(option);
 			}
 		}
 	}
 </script>
 
 <style scoped>
-    ul li {
-        list-style-type: none;
-        text-align: left;
-        font-size: 18px;
-        line-height: 30px;
-    }
 
     .info {
         width: 90%;
@@ -136,6 +295,20 @@
         padding-bottom: 1px;
     }
 
+    .info-left {
+        width: 30%;
+        display: inline-block;
+        margin-top: 20px;
+        margin-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .info-box {
+        display: inline-block;
+        float: right;
+        width: 60%;
+    }
+
     .title {
         font-size: 18px;
         font-weight: bold;
@@ -143,4 +316,15 @@
         text-align: left;
         margin: 10px 20px 0;
     }
+
+    .el-form-item {
+        margin-bottom: 0;
+    }
+
+    .box {
+        height: 400px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
 </style>

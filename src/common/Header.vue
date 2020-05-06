@@ -9,9 +9,9 @@
                     <i class="el-icon-more" style="color: #fff;font-size: 20px"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="/hello">黄金糕</el-dropdown-item>
-                    <el-dropdown-item>狮子头</el-dropdown-item>
-                    <el-dropdown-item>螺蛳粉</el-dropdown-item>
+                    <el-dropdown-item command="/hello">添加集群</el-dropdown-item>
+                    <el-dropdown-item>添加新节点</el-dropdown-item>
+                    <el-dropdown-item>退出此集群</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
 

@@ -36,7 +36,7 @@
 
 <script>
 	export default {
-		name: "aside",
+		name: "Aside",
 		methods: {
 			handleOpen(key, keyPath) {
 				console.log(key, keyPath);

@@ -8,7 +8,7 @@
                         <div>
                             <span>Nodes</span>
                             <br>
-                            <span class="data">3</span>
+                            <span class="data">{{resourcesNums.nodeNum}}</span>
                         </div>
                     </el-card>
                 </router-link>
@@ -19,7 +19,7 @@
                         <div>
                             <span>Namespaces</span>
                             <br>
-                            <span class="data">3</span>
+                            <span class="data">{{resourcesNums.namespaceNum}}</span>
                         </div>
                     </el-card>
                 </router-link>
@@ -30,7 +30,7 @@
                         <div>
                             <span>Deployments</span>
                             <br>
-                            <span class="data">3</span>
+                            <span class="data">{{resourcesNums.deployNum}}</span>
                         </div>
                     </el-card>
                 </router-link>
@@ -41,7 +41,7 @@
                         <div>
                             <span>Services</span>
                             <br>
-                            <span class="data">3</span>
+                            <span class="data">{{resourcesNums.serviceNum}}</span>
                         </div>
                     </el-card>
                 </router-link>
@@ -52,7 +52,7 @@
                         <div>
                             <span>Pods</span>
                             <br>
-                            <span class="data">3</span>
+                            <span class="data">{{resourcesNums.podNum}}</span>
                         </div>
                     </el-card>
                 </router-link>
@@ -67,12 +67,25 @@
 
 <!--机器数量、总cpu、总内存、总共已用cpu、总共已用内存、pod分布-->
 <script>
+	import {nodes, cluster, resourcesNums} from "../router/apis";
+
 	export default {
 		name: "Home",
 		data() {
 			return {
 				cardWidth: 4,
 				cardGutter: 25,
+				resourcesNums: {
+					deployNum: 0,
+					namespaceNum: 0,
+					nodeNum: 0,
+					podNum: 0,
+					serviceNum: 0
+				},
+				usedCpu: 0,
+				usedMemory: 0,
+				usableCpu: 0,
+				usableMemory: 0,
 			}
 		},
 		methods: {
@@ -85,7 +98,7 @@
 					title: [
 						{
 							text: '资源总揽',
-                            left:'50%',
+							left: '50%',
 							textAlign: 'center'
 						},
 						{
@@ -113,16 +126,16 @@
 					},
 					series: [
 						{
-							name:'CPU',
+							name: 'CPU(c)',
 							type: 'pie',
 							radius: '70%',
 							right: "35%",
 							center: ['50%', '50%'],
 							data: [
-								{value: 200, name: '剩余可用'},
-								{value: 310, name: '已经使用'}
+								{value: this.usedCpu, name: '已经使用'},
+								{value: this.usableCpu, name: '剩余可用'}
 							],
-							color: ['#67C23A', '#909399'],
+							color: ['#909399', '#67C23A'],
 							emphasis: {
 								itemStyle: {
 									shadowBlur: 10,
@@ -138,16 +151,16 @@
 							}
 						},
 						{
-							name:'Memory',
+							name: 'Memory(MB)',
 							type: 'pie',
 							radius: '70%',
 							left: '35%',
 							center: ['50%', '50%'],
 							data: [
-								{value: 335, name: '剩余可用'},
-								{value: 310, name: '已经使用'}
+								{value: this.usedMemory, name: '已经使用'},
+								{value: this.usableMemory, name: '剩余可用'}
 							],
-							color: ['#67C23A', '#909399'],
+							color: ['#909399', '#67C23A'],
 							emphasis: {
 								itemStyle: {
 									shadowBlur: 10,
@@ -167,10 +180,35 @@
 
 				// 使用刚指定的配置项和数据显示图表。
 				myChart.setOption(option);
-			}
+			},
+		},
+        created() {
+			cluster(null)
 		},
 		mounted() {
-			this.drawChart();
+			nodes(null).then(res => {
+				// 获取数据成功后的其他操作
+				let allCpu = 0;
+				let allMemory = 0;
+				let usableCpu = 0;
+				let usableMemory = 0;
+				for (let i = 0; i < res.length; i++) {
+					allCpu += res[i].totalCpu
+					allMemory += res[i].totalMemory
+					usableCpu += res[i].usableCpu
+					usableMemory += res[i].usableMemory
+				}
+				this.usedCpu = allCpu - usableCpu
+				this.usedMemory = Math.round((allMemory - usableMemory) / 1024 / 1024)
+				this.usableCpu = usableCpu
+				this.usableMemory = Math.round(usableMemory / 1024 / 1024)
+				this.drawChart()
+			})
+			resourcesNums(null).then(res => {
+				// 获取数据成功后的其他操作
+				this.resourcesNums = res;
+			})
+
 		}
 	}
 </script>

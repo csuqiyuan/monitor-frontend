@@ -2,50 +2,29 @@
     <div style="padding-top: 1px;">
         <div class="info">
             <el-table
-                    :data="tableData"
+                    :data="namespaces"
                     style="width: 100%">
                 <el-table-column
-                        prop="date"
+                        prop="metadata.name"
                         label="名称"
-                        width="100">
+                        width="150">
                 </el-table-column>
                 <el-table-column
-                        prop="name"
-                        label="镜像"
-                        width="100">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
-                        label="申请CPU资源"
-                        width="120">
-                </el-table-column>
-                <el-table-column
-                        prop="address"
-                        label="申请Memory资源"
-                        width="140">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
-                        label="最大CPU资源"
-                        width="120">
-                </el-table-column>
-                <el-table-column
-                        prop="address"
-                        label="最大Memory资源"
-                        width="140">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
+                        prop="createTime"
                         label="创建时间"
-                        width="120">
+                        width="150">
                 </el-table-column>
                 <el-table-column
-                        prop="address"
-                        label="存活时间"
+                        prop="status.phase"
+                        label="状态"
                         width="120">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.status.phase==='Active'"
+                              style="color:#67C23A;font-weight: bold;">{{scope.row.status.phase}}</span>
+                        <span v-else style="color: #F56C6C;font-weight: bold;">{{scope.row.status.phase}}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column
-                        fixed="right"
                         label="操作"
                         width="150">
                     <template slot-scope="scope">
@@ -60,8 +39,31 @@
 </template>
 
 <script>
+    import {namespaces} from "../router/apis";
+
 	export default {
-		name: "Namespaces"
+		name: "Namespaces",
+        data(){
+			return{
+				namespaces:[]
+            }
+        },
+        mounted() {
+			namespaces(null).then(res=>{
+				for (let i = 0; i < res.items.length; i++) {
+					let d = new Date(res.items[i].metadata.creationTimestamp)
+					res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
+						+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
+						+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
+				}
+				this.namespaces = res.items
+			})
+		},
+		methods:{
+			handleClick(row) {
+				console.log(row);
+			},
+        }
 	}
 </script>
 

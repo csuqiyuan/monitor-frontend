@@ -5,7 +5,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import '../static/css/common.css'
 import echarts from 'echarts';
-import axios from 'axios';
+import axios from './axios';
 
 Vue.prototype.$axios = axios
 Vue.use(ElementUI);
