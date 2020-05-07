@@ -1,10 +1,9 @@
 import axios from 'axios';
-import Qs from 'qs'; // 用来处理参数，可不使用，若要使用，npm安装： npm install qs
-axios.defaults.baseURL = 'http://localhost:8081'; // 请求的默认域名
+import router from "../router";
+axios.defaults.baseURL = 'http://localhost:8081';
 // 添加一个请求拦截器
 axios.interceptors.request.use(config => {
-		config.headers.languagetype = 'CN'; // 举例，加上一个公共头部
-		config.data = Qs.stringify(config.data); // 处理数据，可不写
+		config.headers.languagetype = 'CN';
 		return config;
 	},
 	err => {
@@ -14,6 +13,9 @@ axios.interceptors.request.use(config => {
 axios.interceptors.response.use(res => {
 	//在这里对返回的数据进行处理
 	console.log(res.data, '网络正常');
+	if(res.data.message==="找不到主节点"){
+		router.replace("/404")
+	}
 	return res.data;
 }, err => {
 	console.log('网络开了小差！请重试...');
@@ -32,16 +34,16 @@ export function get(url, params) {
 	});
 }
 
-// export function post(url, params) {
-// 	return new Promise((resolve, reject) => {
-// 		axios.post(url, QS.stringify(params))
-// 			.then(res => {
-// 				resolve(res.data);
-// 			})
-// 			.catch(err => {
-// 				reject(err.data)
-// 			})
-// 	});
-// }
+export function post(url, params) {
+	return new Promise((resolve, reject) => {
+		axios.post(url, params)
+			.then(res => {
+				resolve(res.data);
+			})
+			.catch(err => {
+				reject(err.data)
+			})
+	});
+}
 
 export default axios

@@ -4,7 +4,7 @@
             <div style="text-align: left;margin-top: 20px;margin-left: 20px;">
                 <el-form label-width="90px" label-position="left">
                     <el-form-item label="命名空间: ">
-                        <el-select v-model="value" placeholder="全部命名空间" @change="getNamespacedDeployments()">
+                        <el-select v-model="value" placeholder="全部命名空间" @change="getNamespacedServices()">
                             <el-option
                                     v-for="item in options"
                                     :key="item.metadata.name"
@@ -17,7 +17,7 @@
             </div>
             <div style="margin-left: 20px;">
                 <el-table
-                        :data="deployments"
+                        :data="services"
                         style="width: 100%">
                     <el-table-column
                             prop="metadata.name"
@@ -25,18 +25,23 @@
                             width="100">
                     </el-table-column>
                     <el-table-column
-                            prop="spec.template.spec.containers[0].image"
-                            label="镜像名"
+                            prop="spec.clusterIP"
+                            label="ClusterIP"
                             width="150">
                     </el-table-column>
                     <el-table-column
-                            prop="spec.replicas"
-                            label="副本数"
+                            prop="spec.type"
+                            label="类型"
                             width="100">
                     </el-table-column>
                     <el-table-column
-                            prop="status.availableReplicas"
-                            label="可用的副本数"
+                            prop="ports"
+                            label="集群内端口"
+                            width="120">
+                    </el-table-column>
+                    <el-table-column
+                            prop="nodePorts"
+                            label="集群外端口"
                             width="120">
                     </el-table-column>
                     <el-table-column
@@ -64,16 +69,49 @@
 </template>
 
 <script>
-	import {deploymentsForAllNamespaces, namespaces, namespacedDeployments, cluster} from "../axios/apis";
+	import {
+		cluster,
+		namespacedServices,
+		namespaces,
+		services
+	} from "../axios/apis";
 
 	export default {
-		name: "Deployments",
+		name: "Service",
 		data() {
 			return {
-				deployments: [],
+				services: [],
 				options: [],
 				value: ''
 			}
+		},
+		mounted() {
+			services(null).then(res => {
+				for (let i = 0; i < res.items.length; i++) {
+					let d = new Date(res.items[i].metadata.creationTimestamp)
+					res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
+						+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
+						+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
+					res.items[i].ports = ""
+					res.items[i].nodePorts = ""
+					for (let j = 0; j < res.items[i].spec.ports.length; j++) {
+						res.items[i].ports += (res.items[i].spec.ports[j].port + " ")
+						if (res.items[i].spec.type === "NodePort" && res.items[i].spec.ports[j].nodePort !== null) {
+							res.items[i].nodePorts = (res.items[i].spec.ports[j].nodePort + " ")
+						}
+					}
+
+				}
+				this.services = res.items
+			});
+			namespaces(null).then(res => {
+				res.items[res.items.length] = {
+					metadata: {
+						name: "全部命名空间"
+					}
+				}
+				this.options = res.items
+			})
 		},
 		created() {
 			cluster(null).then(res => {
@@ -83,50 +121,47 @@
 				}
 			})
 		},
-		mounted() {
-			deploymentsForAllNamespaces(null).then(res => {
-				for (let i = 0; i < res.items.length; i++) {
-					let d = new Date(res.items[i].metadata.creationTimestamp)
-					res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
-						+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
-						+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
-				}
-				this.deployments = res.items
-			});
-			namespaces(null).then(res => {
-				res.items[res.items.length] = {
-					metadata: {
-						name: "全部命名空间"
-					}
-				}
-				this.options = res.items
-				console.log(res)
-			})
-		},
 		methods: {
-			getNamespacedDeployments() {
-				if (this.value==="全部命名空间"){
-					deploymentsForAllNamespaces(null).then(res => {
+			getNamespacedServices() {
+				if (this.value === "全部命名空间") {
+					services(null).then(res => {
 						for (let i = 0; i < res.items.length; i++) {
 							let d = new Date(res.items[i].metadata.creationTimestamp)
 							res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
 								+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
 								+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
+							res.items[i].ports = ""
+							res.items[i].nodePorts = ""
+							for (let j = 0; j < res.items[i].spec.ports.length; j++) {
+								res.items[i].ports += (res.items[i].spec.ports[j].port + " ")
+								if (res.items[i].spec.type === "NodePort" && res.items[i].spec.ports[j].nodePort !== null) {
+									res.items[i].nodePorts = (res.items[i].spec.ports[j].nodePort + " ")
+								}
+							}
+
 						}
-						this.deployments = res.items
+						this.services = res.items
 					});
-                }
-				else{
-					namespacedDeployments(this.value,null).then(res => {
+				} else {
+					namespacedServices(this.value, null).then(res => {
 						for (let i = 0; i < res.items.length; i++) {
 							let d = new Date(res.items[i].metadata.creationTimestamp)
 							res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
 								+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
 								+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
+							res.items[i].ports = ""
+							res.items[i].nodePorts = ""
+							for (let j = 0; j < res.items[i].spec.ports.length; j++) {
+								res.items[i].ports += (res.items[i].spec.ports[j].port + " ")
+								if (res.items[i].spec.type === "NodePort" && res.items[i].spec.ports[j].nodePort !== null) {
+									res.items[i].nodePorts = (res.items[i].spec.ports[j].nodePort + " ")
+								}
+							}
+
 						}
-						this.deployments = res.items
-                    })
-                }
+						this.services = res.items
+					});
+				}
 			}
 		}
 	}

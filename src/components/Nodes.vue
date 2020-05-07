@@ -35,7 +35,7 @@
 </template>
 
 <script>
-	import {nodes} from "../router/apis";
+	import {cluster, nodes} from "../axios/apis";
 
 	export default {
 		name: "Nodes",
@@ -66,6 +66,14 @@
                 }
 
 				this.nodes = res
+			})
+		},
+        created() {
+			cluster(null).then(res => {
+				console.log(res)
+				if (res.message==null){
+					this.$router.replace("/404")
+				}
 			})
 		},
 		methods: {

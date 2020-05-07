@@ -1,6 +1,6 @@
 <template>
-
-    <div class="all-size">
+    <div style="padding-top: 1px">
+        <div class="title">集群资源总览</div>
         <el-row type="flex" justify="space-around">
             <el-col :span="cardWidth">
                 <router-link to="/nodes">
@@ -62,12 +62,11 @@
             <div id="main1" class="box"></div>
         </div>
     </div>
-
 </template>
 
 <!--机器数量、总cpu、总内存、总共已用cpu、总共已用内存、pod分布-->
 <script>
-	import {nodes, cluster, resourcesNums} from "../router/apis";
+	import {nodes, cluster, resourcesNums} from "../axios/apis";
 
 	export default {
 		name: "Home",
@@ -97,7 +96,7 @@
 				let option = {
 					title: [
 						{
-							text: '资源总揽',
+							text: '节点资源总揽',
 							left: '50%',
 							textAlign: 'center'
 						},
@@ -182,11 +181,17 @@
 				myChart.setOption(option);
 			},
 		},
-        created() {
-			cluster(null)
+		created() {
+			cluster(null).then(res => {
+				console.log(res)
+                if (res.message==null){
+					this.$router.replace("/404")
+                }
+			})
 		},
 		mounted() {
 			nodes(null).then(res => {
+				console.log(res)
 				// 获取数据成功后的其他操作
 				let allCpu = 0;
 				let allMemory = 0;
@@ -236,5 +241,12 @@
         height: 500px;
         width: 100%;
         margin: 100px auto 0;
+    }
+
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 30px;
+        margin: 20px auto
     }
 </style>

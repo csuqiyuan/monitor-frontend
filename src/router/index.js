@@ -6,6 +6,8 @@ import Node from '../components/Node';
 import Namespaces from "../components/Namespaces";
 import Deployments from "../components/Deployments";
 import Pods from "../components/Pods";
+import Services from "../components/Services";
+import NoCluster from "../components/NoCluster";
 
 Vue.use(Router)
 
@@ -20,8 +22,8 @@ export default new Router({
 				component: Nodes
 			},
 			{
-				path:'/node',
-				component:Node
+				path: '/node',
+				component: Node
 			},
 			{
 				path: '/namespaces',
@@ -32,8 +34,16 @@ export default new Router({
 				component: Deployments
 			},
 			{
-				path:'/pods',
+				path: '/pods',
 				component: Pods
+			},
+			{
+				path: '/services',
+				component: Services
+			},
+			{
+				path: '/404',
+				component: NoCluster
 			}
 		]
 	}

@@ -3,7 +3,7 @@
         <div class="info">
             <el-table
                     :data="namespaces"
-                    style="width: 100%">
+                    style="width: 60%">
                 <el-table-column
                         prop="metadata.name"
                         label="名称"
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-    import {namespaces} from "../router/apis";
+	import {cluster, namespaces} from "../axios/apis";
 
 	export default {
 		name: "Namespaces",
@@ -57,6 +57,14 @@
 						+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
 				}
 				this.namespaces = res.items
+			})
+		},
+		created() {
+			cluster(null).then(res => {
+				console.log(res)
+				if (res.message==null){
+					this.$router.replace("/404")
+				}
 			})
 		},
 		methods:{

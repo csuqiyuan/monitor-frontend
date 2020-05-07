@@ -130,7 +130,7 @@
 </template>
 
 <script>
-	import {node, podsByNode} from "../router/apis";
+	import {cluster, node, podsByNode} from "../axios/apis";
 
 	export default {
 		name: "Node",
@@ -160,7 +160,6 @@
                         +"-"+(d.getDay()<10?"0"+d.getDay():d.getDay())+" "+(d.getHours()<10?"0"+d.getHours():d.getHours())
                         +":"+(d.getMinutes()<10?"0"+d.getMinutes():d.getMinutes());
 					for (let j=0;j<res.items[i].spec.containers.length;j++){
-						console.log(res.items[i].spec.containers[j])
 						try{
 							res.items[i].requestCpu += res.items[i].spec.containers[j].resources.requests.cpu.number
 						}catch (e) {
@@ -184,6 +183,14 @@
                     }
 				}
 				this.tableData = res.items
+			})
+		},
+		created() {
+			cluster(null).then(res => {
+				console.log(res)
+				if (res.message==null){
+					this.$router.replace("/404")
+				}
 			})
 		},
 		methods: {
