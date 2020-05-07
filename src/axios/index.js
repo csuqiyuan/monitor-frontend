@@ -47,10 +47,21 @@ export function post(url, params) {
 	});
 }
 
-export function deleteRequest (url, params)
-{
+export function deleteRequest (url, params) {
 	return new Promise((resolve, reject) => {
 		axios.delete(url, params)
+			.then(res => {
+				resolve(res.data);
+			})
+			.catch(err => {
+				reject(err.data)
+			})
+	});
+}
+
+export function patch (url, params) {
+	return new Promise((resolve, reject) => {
+		axios.patch(url, params)
 			.then(res => {
 				resolve(res.data);
 			})

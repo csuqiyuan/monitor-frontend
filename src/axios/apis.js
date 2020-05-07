@@ -1,4 +1,4 @@
-import {get, post, deleteRequest} from "./index";
+import {get, post, deleteRequest, patch} from "./index";
 
 export const getCluster = p => post("/apis/cluster", p)
 export const exitCluster = p => get("/apis/exit", p)
@@ -15,7 +15,12 @@ export const allPods = p => get("/apis/pods", p)
 export const podByName = (namespace, name, p) => get("/apis/" + namespace + "/pod/" + name, p)
 export const namespacedPods = (namespace, p) => get("/apis/" + namespace + "/pods", p)
 export const namespaces = p => get("/apis/namespaces", p)
+export const namespace = p => post("/apis/namespace", p)
+export const deleteNamespace = (namespace, p) => deleteRequest("/apis/namespace/" + namespace, p)
 export const deploymentsForAllNamespaces = p => get("/apis/deployments", p)
+export const addDeployment = (namespace, p) => post("/apis/" + namespace + "/deployments", p)
+export const deleteDeployment = (namespace, name, p) => deleteRequest("/apis/" + namespace + "/deployment/" + name, p)
+export const patchReplica = (namespace, name, p) => patch("/apis/" + namespace + "/deployment/" + name, p)
 export const namespacedDeployments = (namespace, p) => get("/apis/" + namespace + "/deployments", p)
 export const services = p => get("/apis/services", p)
 export const namespacedServices = (namespace, p) => get("/apis/" + namespace + "/services", p)
