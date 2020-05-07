@@ -2,7 +2,7 @@
     <el-aside width="200px" class="all-height">
         <el-menu
                 router
-                default-active="/"
+                :default-active="this.$route.path"
                 class="el-menu-vertical-demo"
                 @open="handleOpen"
                 @close="handleClose">

@@ -23,13 +23,13 @@
                     <el-table-column
                             prop="metadata.name"
                             label="名称"
-                            width="100"
+                            width="120"
                             fixed="left">
                     </el-table-column>
                     <el-table-column
-                            prop="spec.containers[0].image"
+                            prop="images"
                             label="镜像"
-                            width="100">
+                            width="150">
                     </el-table-column>
                     <el-table-column
                             prop="status.phase"
@@ -48,8 +48,8 @@
                     </el-table-column>
                     <el-table-column
                             prop="requestCpu"
-                            label="申请CPU资源"
-                            width="120">
+                            label="申请CPU"
+                            width="100">
                         <template slot-scope="scope">
                             <span v-if="scope.row.requestCpu===0" style="color: #F56C6C">unknown</span>
                             <span v-else>{{scope.row.requestCpu}}</span>
@@ -57,8 +57,8 @@
                     </el-table-column>
                     <el-table-column
                             prop="requestMemory"
-                            label="申请Memory资源"
-                            width="140">
+                            label="申请Memory"
+                            width="110">
                         <template slot-scope="scope">
                             <span v-if="scope.row.requestMemory===0" style="color: #F56C6C">unknown</span>
                             <span v-else>{{scope.row.requestMemory}}</span>
@@ -66,8 +66,8 @@
                     </el-table-column>
                     <el-table-column
                             prop="limitCpu"
-                            label="最大CPU资源"
-                            width="120">
+                            label="最大CPU"
+                            width="100">
                         <template slot-scope="scope">
                             <span v-if="scope.row.limitCpu===0" style="color: #F56C6C">unknown</span>
                             <span v-else>{{scope.row.limitCpu}}</span>
@@ -75,8 +75,8 @@
                     </el-table-column>
                     <el-table-column
                             prop="limitMemory"
-                            label="最大Memory资源"
-                            width="140">
+                            label="最大Memory"
+                            width="110">
                         <template slot-scope="scope">
                             <span v-if="scope.row.limitMemory===0" style="color: #F56C6C">unknown</span>
                             <span v-else>{{scope.row.limitMemory}}</span>
@@ -92,7 +92,7 @@
                             label="操作"
                             width="100">
                         <template slot-scope="scope">
-                            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+                            <el-button @click="checkPod(scope.row)" type="text" size="small">查看</el-button>
                             <el-button type="text" size="small">删除</el-button>
                         </template>
                     </el-table-column>
@@ -117,7 +117,7 @@
 		created() {
 			cluster(null).then(res => {
 				console.log(res)
-				if (res.message==null){
+				if (res.message == null) {
 					this.$router.replace("/404")
 				}
 			})
@@ -131,11 +131,17 @@
 							res.items[i].requestMemory = 0;
 							res.items[i].limitCpu = 0;
 							res.items[i].limitMemory = 0;
+							res.items[i].images = "";
 							let d = new Date(res.items[i].metadata.creationTimestamp)
 							res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
 								+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
 								+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
 							for (let j = 0; j < res.items[i].spec.containers.length; j++) {
+								try {
+									res.items[i].images += (res.items[i].spec.containers[j].image + '\n')
+								} catch (e) {
+									res.items[i].images += ""
+								}
 								try {
 									res.items[i].requestCpu += res.items[i].spec.containers[j].resources.requests.cpu.number
 								} catch (e) {
@@ -167,11 +173,17 @@
 							res.items[i].requestMemory = 0;
 							res.items[i].limitCpu = 0;
 							res.items[i].limitMemory = 0;
+							res.items[i].images = "";
 							let d = new Date(res.items[i].metadata.creationTimestamp)
 							res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
 								+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
 								+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
 							for (let j = 0; j < res.items[i].spec.containers.length; j++) {
+								try {
+									res.items[i].images += (res.items[i].spec.containers[j].image + '\n')
+								} catch (e) {
+									res.items[i].images += ""
+								}
 								try {
 									res.items[i].requestCpu += res.items[i].spec.containers[j].resources.requests.cpu.number
 								} catch (e) {
@@ -197,7 +209,10 @@
 						this.tableData = res.items
 					})
 				}
-			}
+			},
+			checkPod(row) {
+				this.$router.push({path: 'pod', query: {namespace: row.metadata.namespace, name: row.metadata.name}})
+			},
 		},
 		mounted() {
 			namespaces(null).then(res => {
@@ -215,11 +230,17 @@
 					res.items[i].requestMemory = 0;
 					res.items[i].limitCpu = 0;
 					res.items[i].limitMemory = 0;
+					res.items[i].images = "";
 					let d = new Date(res.items[i].metadata.creationTimestamp)
 					res.items[i].createTime = d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1))
 						+ "-" + (d.getDay() < 10 ? "0" + d.getDay() : d.getDay()) + " " + (d.getHours() < 10 ? "0" + d.getHours() : d.getHours())
 						+ ":" + (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes());
 					for (let j = 0; j < res.items[i].spec.containers.length; j++) {
+						try {
+							res.items[i].images += (res.items[i].spec.containers[j].image + '\n')
+						} catch (e) {
+							res.items[i].images += ""
+						}
 						try {
 							res.items[i].requestCpu += res.items[i].spec.containers[j].resources.requests.cpu.number
 						} catch (e) {

@@ -67,7 +67,7 @@
                 </div>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="addNode = false">取 消</el-button>
-                    <el-button type="primary" @click="addNodeFun">确 定</el-button>
+                    <el-button :plain="true" type="primary" @click="addNodeFun">确 定</el-button>
                 </div>
             </el-dialog>
             <el-dialog title="退出此集群" :visible.sync="exitCluster">
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-	import {getCluster, exitCluster} from "../axios/apis";
+	import {getCluster, exitCluster, createMaster, createNode} from "../axios/apis";
 
 	export default {
 		name: "Header",
@@ -118,11 +118,30 @@
 					console.log(res)
 				})
 				this.addCluster = false
-                this.$router.replace("/")
-                this.$router.go(0)
+				this.$router.replace("/")
+				this.$router.go(0)
 			},
 			addNodeFun() {
-				console.log(this.node)
+				this.$message('这可能需要几分钟时间，请稍等...');
+				if (this.node.isMaster === 1) {
+					createMaster(this.node).then(res => {
+						console.log(res)
+						this.$message({
+							message: '恭喜你，添加成功',
+							type: 'success'
+						});
+						this.$router.go(0)
+					})
+				} else {
+					createNode(this.node).then(res => {
+						console.log(res)
+						this.$message({
+							message: '恭喜你，添加成功',
+							type: 'success'
+						});
+						this.$router.go(0)
+					})
+				}
 				this.addNode = false
 			},
 			exitClusterFun() {

@@ -8,6 +8,7 @@ import Deployments from "../components/Deployments";
 import Pods from "../components/Pods";
 import Services from "../components/Services";
 import NoCluster from "../components/NoCluster";
+import Pod from "../components/Pod";
 
 Vue.use(Router)
 
@@ -36,6 +37,10 @@ export default new Router({
 			{
 				path: '/pods',
 				component: Pods
+			},
+			{
+				path:'/pod',
+				component: Pod
 			},
 			{
 				path: '/services',
