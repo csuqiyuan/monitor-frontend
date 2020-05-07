@@ -14,6 +14,7 @@
                         </el-select>
                     </el-form-item>
                 </el-form>
+                <el-button @click="add" type="primary" size="mini">添加</el-button>
             </div>
             <div style="margin-left: 20px;">
                 <el-table
@@ -58,11 +59,72 @@
                             label="操作"
                             width="150">
                         <template slot-scope="scope">
-                            <el-button @click="handleClick(scope.row)" type="text" size="small">删除</el-button>
+                            <el-button @click="deleteServiceFun(scope.row)" type="text" size="small">删除</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </div>
+            <div>
+                <el-dialog title="添加 Service" :visible.sync="addService">
+                    <div style="width: 70%;margin: 0 auto;">
+                        <el-form :model="service">
+                            <el-form-item label="Service 名: " :label-width="formLabelWidth">
+                                <el-input placeholder="Deployments 名" v-model="service.metadata.name"
+                                          autocomplete="off"></el-input>
+                            </el-form-item>
+                            <el-form-item label="命名空间: " :label-width="formLabelWidth">
+                                <el-select v-model="service.metadata.namespace" placeholder="全部命名空间"
+                                           @change="getNamespacedServices()">
+                                    <el-option
+                                            v-for="item in options"
+                                            :key="item.metadata.name"
+                                            :label="item.metadata.name"
+                                            :value="item.metadata.name">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Label(仅输入值): " :label-width="formLabelWidth">
+                                <el-input v-model="service.spec.selector.label"
+                                          autocomplete="off"></el-input>
+                            </el-form-item>
+
+                            <el-form-item label="类型: " :label-width="formLabelWidth">
+                                <el-select v-model="service.spec.type" placeholder="请选择">
+                                    <el-option
+                                            v-for="item in type"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="内部端口: " :label-width="formLabelWidth">
+                                <el-input placeholder="用于集群内部的端口"
+                                          v-model="service.spec.ports[0].port"
+                                          autocomplete="off"></el-input>
+                            </el-form-item>
+                            <el-form-item label="外部端口(类型为NodePort时需填写): " :label-width="formLabelWidth">
+                                <el-input placeholder="用于集群外部的端口(范围30000-50000)"
+                                          v-model="service.spec.ports[0].nodePort"
+                                          autocomplete="off"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="addService = false">取 消</el-button>
+                        <el-button :plain="true" type="primary" @click="addServiceFun">确 定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+            <el-dialog title="提示"
+                       :visible.sync="deleteService"
+                       width="30%">
+                <span>确定删除 Service {{this.row.metadata.name}} ?</span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="deleteService = false">取 消</el-button>
+                    <el-button type="primary" @click="deleteServiceFun2">确 定</el-button>
+                </span>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -72,7 +134,9 @@
 		cluster,
 		namespacedServices,
 		namespaces,
-		services
+		services,
+		addService,
+		deleteService
 	} from "../axios/apis";
 
 	export default {
@@ -81,7 +145,44 @@
 			return {
 				services: [],
 				options: [],
-				value: ''
+				value: '',
+				addService: false,
+				formLabelWidth: '150px',
+				deleteService: false,
+				row: {
+					metadata: {
+						name: "",
+						namespace: ""
+					},
+				},
+				service: {
+					apiVersion: "v1",
+					kind: "Service",
+					metadata: {
+						name: "",
+						namespace: "default"
+					},
+					spec: {
+						type: "ClusterIP",
+						ports: [
+							{
+								port: "",
+								nodePort: ""
+							}
+						],
+						selector: {
+							label: ""
+						},
+					}
+				},
+				type: [
+					{
+						value: "ClusterIP"
+					},
+					{
+						value: "NodePort"
+					}
+				],
 			}
 		},
 		mounted() {
@@ -115,7 +216,7 @@
 		created() {
 			cluster(null).then(res => {
 				console.log(res)
-				if (res.message==null){
+				if (res.message == null) {
 					this.$router.replace("/404")
 				}
 			})
@@ -162,8 +263,29 @@
 					});
 				}
 			},
-			handleClick(row) {
-				console.log(row);
+			deleteServiceFun(row) {
+				this.row = row
+				this.deleteService = true
+			},
+			deleteServiceFun2() {
+				deleteService(this.row.metadata.namespace, this.row.metadata.name, null).then(res => {
+					console.log(res)
+					this.row = {}
+					this.$router.go(0)
+				})
+				this.deleteService = false
+			},
+			add() {
+				this.addService = true
+			},
+			addServiceFun() {
+				this.service.spec.ports[0].port = parseInt(this.service.spec.ports[0].port)
+				this.service.spec.ports[0].nodePort = parseInt(this.service.spec.ports[0].nodePort)
+				addService(this.service.metadata.namespace, null).then(res => {
+					console.log(res)
+					this.$router.go(0)
+				})
+				this.addService = false
 			},
 		}
 	}

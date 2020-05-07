@@ -154,8 +154,7 @@
 				console.log(this.pod)
 			})
 		},
-		methods: {
-		}
+		methods: {}
 	}
 </script>
 

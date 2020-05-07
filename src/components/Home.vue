@@ -96,7 +96,7 @@
 				let option = {
 					title: [
 						{
-							text: '节点资源总揽',
+							text: '集群资源总揽',
 							left: '50%',
 							textAlign: 'center'
 						},

@@ -36,7 +36,7 @@
             <el-dialog title="提示"
                        :visible.sync="deleteNode"
                        width="30%">
-                <span>这是一段信息</span>
+                <span>这将从集群中卸载这个节点</span>
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="deleteNode = false">取 消</el-button>
                     <el-button type="primary" @click="deleteNodeFun2">确 定</el-button>

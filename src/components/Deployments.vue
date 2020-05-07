@@ -76,14 +76,14 @@
                 </el-dialog>
             </div>
             <div>
-                <el-dialog title="添加Deployment" :visible.sync="patchReplica">
+                <el-dialog title="修改副本数" :visible.sync="patchReplica">
                     <div style="width: 70%;margin: 0 auto;">
                         <el-form :model="patch">
                             <el-form-item label="更新的副本数: " :label-width="formLabelWidth">
                                 <el-input placeholder="Deployments 名"
                                           v-model="patch.value"
                                           autocomplete="off"
-                                type="number"></el-input>
+                                          type="number"></el-input>
                             </el-form-item>
                         </el-form>
                     </div>
@@ -174,7 +174,8 @@
 				deleteDeployment: false,
 				row: {
 					metadata: {
-						name: ""
+						name: "",
+						namespace: ""
 					}
 				},
 				formLabelWidth: '150px',
@@ -287,16 +288,20 @@
 				this.addDeployment = true
 			},
 			addDeploymentFun() {
-				this.deployment.spec.template.metadata.labels.label = this.deployment.spec.selector.matchLabels.label
-				this.deployment.spec.template.spec.containers[0].resources.requests.memory = this.deployment.spec.template.spec.containers[0].resources.limits.memory
-				this.deployment.spec.template.spec.containers[0].resources.requests.cpu = this.deployment.spec.template.spec.containers[0].resources.limits.cpu
+				this.deployment.spec.template.metadata.labels.label =
+                    this.deployment.spec.selector.matchLabels.label
+				this.deployment.spec.template.spec.containers[0].resources.requests.memory =
+                    this.deployment.spec.template.spec.containers[0].resources.limits.memory
+				this.deployment.spec.template.spec.containers[0].resources.requests.cpu =
+                    this.deployment.spec.template.spec.containers[0].resources.limits.cpu
+				this.deployment.spec.template.spec.containers[0].ports[0].containerPort =
+                    parseInt(this.deployment.spec.template.spec.containers[0].ports[0].containerPort)
 				addDeployment(this.deployment.metadata.namespace, this.deployment).then(res => {
 					console.log(res)
 					this.$router.go(0)
 				})
 			},
 			deleteDeploymentFun(row) {
-				console.log(row)
 				this.row = row
 				this.deleteDeployment = true
 			},

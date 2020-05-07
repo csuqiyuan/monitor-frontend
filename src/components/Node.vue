@@ -121,16 +121,25 @@
                         width="100">
                     <template slot-scope="scope">
                         <el-button @click="checkPod(scope.row)" type="text" size="small">查看</el-button>
-                        <el-button type="text" size="small">删除</el-button>
+                        <el-button @click="deletePodFun(scope.row)" type="text" size="small">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
+            <el-dialog title="提示"
+                       :visible.sync="deletePod"
+                       width="30%">
+                <span>确定删除 Pod {{this.row.metadata.name}} ?</span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="deletePod = false">取 消</el-button>
+                    <el-button type="primary" @click="deletePodFun2">确 定</el-button>
+                </span>
+            </el-dialog>
         </div>
     </div>
 </template>
 
 <script>
-	import {cluster, node, podsByNode} from "../axios/apis";
+	import {cluster, deletePod, node, podsByNode} from "../axios/apis";
 
 	export default {
 		name: "Node",
@@ -138,7 +147,14 @@
 			return {
 				nodeInfo: {},
 				tableData: [],
-				isActive: true
+				isActive: true,
+				deletePod: false,
+				row: {
+					metadata: {
+						name: "",
+						namespace: ""
+					},
+				},
 			}
 		},
 		mounted() {
@@ -293,7 +309,19 @@
 				};
 				// 使用刚指定的配置项和数据显示图表。
 				myChart.setOption(option);
-			}
+			},
+			deletePodFun(row) {
+				this.deletePod = true;
+				this.row = row;
+			},
+			deletePodFun2() {
+				deletePod(this.row.metadata.namespace,this.row.metadata.name).then(res=>{
+					console.log(res)
+					this.row = {}
+					this.$router.go(0)
+				})
+				this.deletePod = false
+			},
 		}
 	}
 </script>

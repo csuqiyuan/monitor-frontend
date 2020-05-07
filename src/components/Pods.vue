@@ -14,6 +14,7 @@
                         </el-select>
                     </el-form-item>
                 </el-form>
+                <el-button @click="add" type="primary" size="mini">添加</el-button>
             </div>
             <div style="margin-left: 20px;">
                 <el-table
@@ -93,17 +94,81 @@
                             width="100">
                         <template slot-scope="scope">
                             <el-button @click="checkPod(scope.row)" type="text" size="small">查看</el-button>
-                            <el-button type="text" size="small">删除</el-button>
+                            <el-button @click="deletePodFun(scope.row)" type="text" size="small">删除</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </div>
         </div>
+        <div>
+            <el-dialog title="添加Deployment" :visible.sync="addPod">
+                <div style="width: 70%;margin: 0 auto;">
+                    <el-form :model="pod">
+                        <el-form-item label="Pod 名: " :label-width="formLabelWidth">
+                            <el-input placeholder="Pod 名" v-model="pod.metadata.name"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="命名空间: " :label-width="formLabelWidth">
+                            <el-select placeholder="默认为 default" v-model="pod.metadata.namespace"
+                                       @change="getNamespacedPods">
+                                <el-option
+                                        v-for="item in options"
+                                        :key="item.metadata.name"
+                                        :label="item.metadata.name"
+                                        :value="item.metadata.name">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="Label(仅输入值): " :label-width="formLabelWidth">
+                            <el-input placeholder="默认为 Pod 名"
+                                      v-model="pod.metadata.labels.label"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="容器名: " :label-width="formLabelWidth">
+                            <el-input placeholder="容器名" v-model="pod.spec.containers[0].name"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="镜像名: " :label-width="formLabelWidth">
+                            <el-input placeholder="镜像名" v-model="pod.spec.containers[0].image"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="容器端口号: " :label-width="formLabelWidth">
+                            <el-input placeholder="容器端口号"
+                                      v-model="pod.spec.containers[0].ports[0].containerPort"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="Cpu资源(单位m，1000m=1c): " :label-width="formLabelWidth">
+                            <el-input placeholder="请带单位，如250m"
+                                      v-model="pod.spec.containers[0].resources.limits.cpu"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="Memory资源(单位Mi): " :label-width="formLabelWidth">
+                            <el-input placeholder="请带单位，如100Mi"
+                                      v-model="pod.spec.containers[0].resources.limits.memory"
+                                      autocomplete="off"></el-input>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="add = false">取 消</el-button>
+                    <el-button :plain="true" type="primary" @click="addPodFun">确 定</el-button>
+                </div>
+            </el-dialog>
+        </div>
+        <el-dialog title="提示"
+                   :visible.sync="deletePod"
+                   width="30%">
+            <span>确定删除 Pod {{this.row.metadata.name}} ?</span>
+            <span slot="footer" class="dialog-footer">
+                    <el-button @click="deletePod = false">取 消</el-button>
+                    <el-button type="primary" @click="deletePodFun2">确 定</el-button>
+                </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-	import {allPods, cluster, namespacedPods, namespaces} from "../axios/apis";
+	import {allPods, cluster, namespacedPods, namespaces, addPod, deletePod} from "../axios/apis";
 
 	export default {
 		name: "Pods",
@@ -111,7 +176,50 @@
 			return {
 				tableData: [],
 				options: [],
-				value: ''
+				value: '',
+				addPod: false,
+				formLabelWidth: '150px',
+				deletePod: false,
+				row: {
+					metadata: {
+						name: "",
+						namespace: ""
+					},
+				},
+				pod: {
+					apiVersion: "v1",
+					kind: "Pod",
+					metadata: {
+						name: "",
+						namespace: "default",
+						labels: {
+							label: ""
+						}
+					},
+					spec: {
+						containers: [
+							{
+								image: "",
+								name: "",
+								ports: [
+									{
+										containerPort: ""
+									}
+								],
+								resources: {
+									limits: {
+										cpu: "250m",
+										memory: "100Mi"
+									},
+									requests: {
+										cpu: "250m",
+										memory: "100Mi"
+									}
+								}
+							}
+						]
+					}
+				}
 			}
 		},
 		created() {
@@ -213,6 +321,33 @@
 			checkPod(row) {
 				this.$router.push({path: 'pod', query: {namespace: row.metadata.namespace, name: row.metadata.name}})
 			},
+			add() {
+				this.addPod = true
+			},
+			addPodFun() {
+				this.pod.spec.containers[0].resources.requests.memory = this.pod.spec.containers[0].resources.limits.memory
+				this.pod.spec.containers[0].resources.requests.cpu = this.pod.spec.containers[0].resources.limits.cpu
+				this.pod.spec.containers[0].ports[0].containerPort =
+					parseInt(this.pod.spec.containers[0].ports[0].containerPort)
+				addPod(this.pod.metadata.namespace, this.pod).then(res => {
+					console.log(res)
+					this.$router.go(0)
+				})
+			},
+			deletePodFun(row) {
+				this.deletePod = true;
+				this.row = row;
+			},
+			deletePodFun2() {
+				console.log(this.row)
+				deletePod(this.row.metadata.namespace,this.row.metadata.name).then(res=>{
+					console.log(res)
+					this.row = {}
+					this.$router.go(0)
+                })
+                this.deletePod = false
+			},
+
 		},
 		mounted() {
 			namespaces(null).then(res => {
