@@ -124,6 +124,11 @@
                             width="100">
                     </el-table-column>
                     <el-table-column
+                            prop="spec.selector.matchLabels.label"
+                            label="Label"
+                            width="120">
+                    </el-table-column>
+                    <el-table-column
                             prop="createTime"
                             label="创建时间"
                             width="100">

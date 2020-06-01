@@ -1,6 +1,7 @@
 import {get, post, deleteRequest, patch} from "./index";
 
-export const getCluster = p => post("/apis/cluster", p)
+export const postCluster = p => post("/apis/cluster", p)
+export const getCluster = p => get("/apis/cluster",p)
 export const exitCluster = p => get("/apis/exit", p)
 export const createMaster = p => post("/apis/master", p)
 export const createNode = p => post("/apis/node", p)
@@ -20,7 +21,7 @@ export const namespaces = p => get("/apis/namespaces", p)
 export const namespace = p => post("/apis/namespace", p)
 export const deleteNamespace = (namespace, p) => deleteRequest("/apis/namespace/" + namespace, p)
 export const deploymentsForAllNamespaces = p => get("/apis/deployments", p)
-export const addDeployment = (namespace, p) => post("/apis/" + namespace + "/deployments", p)
+export const addDeployment = (namespace, p) => post("/apis/" + namespace + "/deployment", p)
 export const deleteDeployment = (namespace, name, p) => deleteRequest("/apis/" + namespace + "/deployment/" + name, p)
 export const patchReplica = (namespace, name, p) => patch("/apis/" + namespace + "/deployment/" + name, p)
 export const namespacedDeployments = (namespace, p) => get("/apis/" + namespace + "/deployments", p)

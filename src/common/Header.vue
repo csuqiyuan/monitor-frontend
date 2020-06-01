@@ -83,7 +83,7 @@
 </template>
 
 <script>
-	import {getCluster, exitCluster, createMaster, createNode} from "../axios/apis";
+	import {getCluster, postCluster, exitCluster, createMaster, createNode} from "../axios/apis";
 
 	export default {
 		name: "Header",
@@ -106,7 +106,7 @@
 					password: '',
 					rootName: '',
 					rootPassword: '',
-					isMaster: 1,
+					isMaster: '',
 				},
 				formLabelWidth: '150px'
 			}
@@ -114,7 +114,7 @@
 		methods: {
 			addClusterFun() {
 				console.log(this.cluster)
-				getCluster(this.cluster).then(res => {
+				postCluster(this.cluster).then(res => {
 					console.log(res)
 				})
 				this.addCluster = false
@@ -123,23 +123,28 @@
 			},
 			addNodeFun() {
 				this.$message('这可能需要几分钟时间，请稍等...');
+				console.log(this.node)
+				this.node.isMaster = parseInt(this.node.isMaster)
 				if (this.node.isMaster === 1) {
 					createMaster(this.node).then(res => {
 						console.log(res)
+						getCluster(null)
+						this.$router.replace("/")
+						// this.$router.go(0)
 						this.$message({
 							message: '恭喜你，添加成功',
 							type: 'success'
 						});
-						this.$router.go(0)
 					})
 				} else {
 					createNode(this.node).then(res => {
 						console.log(res)
+						this.$router.replace("/")
+						// this.$router.go(0)
 						this.$message({
 							message: '恭喜你，添加成功',
 							type: 'success'
 						});
-						this.$router.go(0)
 					})
 				}
 				this.addNode = false

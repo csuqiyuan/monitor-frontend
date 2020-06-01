@@ -100,9 +100,7 @@
 				this.deleteHostname = hostname
 			},
 			deleteNodeFun2() {
-				deleteNode(this.deleteHostname, null).then(res => {
-					console.log(res)
-				})
+				deleteNode(this.deleteHostname, null)
 				this.deleteNode = false
 				this.deleteHostname = ""
 				this.$router.go(0)

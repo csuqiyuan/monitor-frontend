@@ -20,6 +20,9 @@
                             <span v-else style="color: #F56C6C;font-weight: bold;">{{pod.status.phase}}</span>
                         </template>
                     </el-form-item>
+                    <el-form-item label="Label">
+                        {{pod.metadata.labels.label}}
+                    </el-form-item>
                     <el-form-item label="创建时间: ">
                         {{pod.createTime}}
                     </el-form-item>

@@ -111,6 +111,11 @@
                     </template>
                 </el-table-column>
                 <el-table-column
+                        prop="metadata.labels.label"
+                        label="Label"
+                        width="100">
+                </el-table-column>
+                <el-table-column
                         prop="createTime"
                         label="创建时间"
                         width="100">

@@ -51,6 +51,11 @@
                             width="100">
                     </el-table-column>
                     <el-table-column
+                            prop="spec.selector.label"
+                            label="Label"
+                            width="150">
+                    </el-table-column>
+                    <el-table-column
                             prop="createTime"
                             label="创建时间"
                             width="100">
@@ -69,7 +74,7 @@
                     <div style="width: 70%;margin: 0 auto;">
                         <el-form :model="service">
                             <el-form-item label="Service 名: " :label-width="formLabelWidth">
-                                <el-input placeholder="Deployments 名" v-model="service.metadata.name"
+                                <el-input placeholder="Service 名" v-model="service.metadata.name"
                                           autocomplete="off"></el-input>
                             </el-form-item>
                             <el-form-item label="命名空间: " :label-width="formLabelWidth">
@@ -281,7 +286,7 @@
 			addServiceFun() {
 				this.service.spec.ports[0].port = parseInt(this.service.spec.ports[0].port)
 				this.service.spec.ports[0].nodePort = parseInt(this.service.spec.ports[0].nodePort)
-				addService(this.service.metadata.namespace, null).then(res => {
+				addService(this.service.metadata.namespace, this.service).then(res => {
 					console.log(res)
 					this.$router.go(0)
 				})
